@@ -254,6 +254,13 @@ public class ToolsmithSharper implements ModInitializer {
 	public static boolean canSharpenPreview(PlayerEntity player, World world, ItemStack target, String coating, String tier) {
 		if (target.isEmpty() || !isSharpenable(target)) return false;
 
+		if (!coating.equals("none") && !coating.equals("luck")) {
+			if (isTool(target) && !isAxe(target)) {
+				if (world.isClient()) player.sendMessage(Text.literal("§cThis oil is too volatile for gathering tools! Use it on weapons."), true);
+				return false;
+			}
+		}
+
 		int usesToApply;
 		if (coating.equals("none")) usesToApply = isTool(target) ? MAX_SHARPER_USES * 2 : MAX_SHARPER_USES;
 		else usesToApply = tier.equals("extended") ? MAX_COATING_USES * 2 : MAX_COATING_USES;
@@ -396,7 +403,14 @@ public class ToolsmithSharper implements ModInitializer {
 			}
 			else if (coating.equals("frost")) {
 				var biomeEntry = world.getBiome(player.getBlockPos());
-				if (biomeEntry.value().isCold(player.getBlockPos(), world.getSeaLevel())) {
+				boolean isHot = biomeEntry.value().getTemperature() > 1.0f;
+
+				if (isHot || player.isInLava() || player.isOnFire()) {
+					drainAmount = 2;
+					if (!world.isClient()) {
+						((ServerWorld)world).spawnParticles(ParticleTypes.SMOKE, player.getX(), player.getY() + 1, player.getZ(), 3, 0.1, 0.1, 0.1, 0.02);
+					}
+				} else if (biomeEntry.value().isCold(player.getBlockPos(), world.getSeaLevel())) {
 					if (world.random.nextFloat() < 0.5f) drainAmount = 0;
 				}
 			}
