@@ -64,13 +64,6 @@ Vous pouvez personnaliser l'intégralité du mod de trois façons différentes :
 
 ---
 
-## 📦 Installation
-1.  Téléchargez et installez **Fabric Loader**.
-2.  Ajoutez le **Fabric API** dans votre dossier `mods`.
-3.  Placez le fichier `.jar` de **Toolsmith Sharper** dans votre dossier `mods`.
-
----
-
 ## 📜 Licence
 Ce mod est distribué sous licence **MIT**.
 
