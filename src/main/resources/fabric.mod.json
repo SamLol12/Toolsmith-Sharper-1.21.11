@@ -2,33 +2,37 @@
 	"schemaVersion": 1,
 	"id": "toolsmithsharper",
 	"version": "${version}",
-	"name": "ToolsmithSharper",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "Toolsmith Sharper",
+	"description": "Enhance your arsenal by sharpening tools and weapons! Use whetstones and elemental oils (Fire, Poison, Frost...) to gain temporary buffs, improved damage, and mining speed.",
 	"authors": [
-		"Me!"
+		"SamLol12"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/SamLol12/toolsmithsharper",
+		"sources": "https://github.com/SamLol12/toolsmithsharper"
 	},
-	"license": "CC0-1.0",
+	"license": "MIT",
 	"icon": "assets/toolsmithsharper/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.audacelol12.toolsmithsharper.ToolsmithSharper"
+			"com.samlol12.toolsmithsharper.ToolsmithSharper"
 		],
-		"client": [
-			"com.audacelol12.toolsmithsharper.ToolsmithSharperClient"
+		"modmenu": [
+			"com.samlol12.toolsmithsharper.ModMenuIntegration"
 		]
 	},
 	"mixins": [
 		"toolsmithsharper.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.18.6",
+		"fabricloader": ">=0.16.0",
 		"minecraft": "~1.21.11",
 		"java": ">=21",
-		"fabric-api": "*"
+		"fabric-api": "*",
+		"modmenu": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
 	}
 }

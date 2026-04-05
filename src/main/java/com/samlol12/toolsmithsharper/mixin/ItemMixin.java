@@ -1,6 +1,6 @@
-package com.audacelol12.toolsmithsharper.mixin;
+package com.samlol12.toolsmithsharper.mixin;
 
-import com.audacelol12.toolsmithsharper.ToolsmithSharper;
+import com.samlol12.toolsmithsharper.ToolsmithSharper;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;

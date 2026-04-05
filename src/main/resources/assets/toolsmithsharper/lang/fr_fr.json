@@ -1,0 +1,26 @@
+{
+  "config.toolsmithsharper.title": "Configuration de Toolsmith Sharper",
+  "config.toolsmithsharper.category.mechanics": "Mécaniques de Base",
+  "config.toolsmithsharper.category.balancing": "Équilibrage de Puissance",
+
+  "config.toolsmithsharper.max_uses": "Usages d'Aiguisage Max",
+  "config.toolsmithsharper.max_uses.tooltip": "Nombre de coups avant que l'aiguisage de base ne disparaisse. (Défaut: 32)",
+
+  "config.toolsmithsharper.max_coating_uses": "Usages de Revêtement Max",
+  "config.toolsmithsharper.max_coating_uses.tooltip": "Nombre de coups pour les huiles (Feu, Poison, etc.). (Défaut: 10)",
+
+  "config.toolsmithsharper.xp_cost": "Coût en Niveaux d'XP",
+  "config.toolsmithsharper.xp_cost.tooltip": "Niveaux d'XP consommés par aiguisage. (Défaut: 1)",
+
+  "config.toolsmithsharper.repair_percentage": "Durabilité Réparée",
+  "config.toolsmithsharper.repair_percentage.tooltip": "Pourcentage de durabilité restauré lors de l'aiguisage. (Défaut: 10%)",
+
+  "config.toolsmithsharper.damage_multiplier": "Bonus de Dégâts d'Arme",
+  "config.toolsmithsharper.damage_multiplier.tooltip": "Dégâts d'attaque supplémentaires pour les armes aiguisées (0.25 = +25%). (Défaut: 0.25)",
+
+  "config.toolsmithsharper.speed_boost": "Boost de Vitesse de Minage",
+  "config.toolsmithsharper.speed_boost.tooltip": "Vitesse plate ajoutée à l'efficacité de minage des outils. (Défaut: 2.0)",
+
+  "config.toolsmithsharper.suffix.damage": "Dégâts",
+  "config.toolsmithsharper.suffix.speed": "Vitesse"
+}

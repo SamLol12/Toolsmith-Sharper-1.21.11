@@ -1,4 +1,4 @@
-package com.audacelol12.toolsmithsharper;
+package com.samlol12.toolsmithsharper;
 
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -119,6 +119,8 @@ public class ToolsmithSharper implements ModInitializer {
 				String tier = stack.getOrDefault(SHARPER_COATING_TIER, "base");
 
 				if (ToolsmithSharper.trySharpen(player, world, target, coating, tier) == ActionResult.SUCCESS) {
+					player.swingHand(hand);
+
 					if (consume) {
 						stack.decrement(1);
 					} else {
@@ -138,22 +140,28 @@ public class ToolsmithSharper implements ModInitializer {
 	// ITEMS & COMPONENTS
 	// ==========================================
 	public static final RegistryKey<Item> WHETSTONE_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "whetstone"));
-	public static final Item WHETSTONE = Registry.register(Registries.ITEM, WHETSTONE_KEY.getValue(), new ToolsmithItem(new Item.Settings().registryKey(WHETSTONE_KEY).maxDamage(3), 60, "none", false));
+	public static final Item WHETSTONE = Registry.register(Registries.ITEM, WHETSTONE_KEY.getValue(),
+			new ToolsmithItem(new Item.Settings().registryKey(WHETSTONE_KEY).maxDamage(3), 30, "none", false));
 
 	public static final RegistryKey<Item> FIRE_OIL_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "fire_oil"));
-	public static final Item FIRE_OIL = Registry.register(Registries.ITEM, FIRE_OIL_KEY.getValue(), new ToolsmithItem(new Item.Settings().registryKey(FIRE_OIL_KEY), 20, "fire", true));
+	public static final Item FIRE_OIL = Registry.register(Registries.ITEM, FIRE_OIL_KEY.getValue(),
+			new ToolsmithItem(new Item.Settings().registryKey(FIRE_OIL_KEY), 12, "fire", true));
 
 	public static final RegistryKey<Item> POISON_OIL_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "poison_oil"));
-	public static final Item POISON_OIL = Registry.register(Registries.ITEM, POISON_OIL_KEY.getValue(), new ToolsmithItem(new Item.Settings().registryKey(POISON_OIL_KEY), 20, "poison", true));
+	public static final Item POISON_OIL = Registry.register(Registries.ITEM, POISON_OIL_KEY.getValue(),
+			new ToolsmithItem(new Item.Settings().registryKey(POISON_OIL_KEY), 12, "poison", true));
 
 	public static final RegistryKey<Item> VAMPIRE_OIL_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "vampire_oil"));
-	public static final Item VAMPIRE_OIL = Registry.register(Registries.ITEM, VAMPIRE_OIL_KEY.getValue(), new ToolsmithItem(new Item.Settings().registryKey(VAMPIRE_OIL_KEY), 20, "vampire", true));
+	public static final Item VAMPIRE_OIL = Registry.register(Registries.ITEM, VAMPIRE_OIL_KEY.getValue(),
+			new ToolsmithItem(new Item.Settings().registryKey(VAMPIRE_OIL_KEY), 12, "vampire", true));
 
 	public static final RegistryKey<Item> FROST_OIL_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "frost_oil"));
-	public static final Item FROST_OIL = Registry.register(Registries.ITEM, FROST_OIL_KEY.getValue(), new ToolsmithItem(new Item.Settings().registryKey(FROST_OIL_KEY), 20, "frost", true));
+	public static final Item FROST_OIL = Registry.register(Registries.ITEM, FROST_OIL_KEY.getValue(),
+			new ToolsmithItem(new Item.Settings().registryKey(FROST_OIL_KEY), 12, "frost", true));
 
 	public static final RegistryKey<Item> LUCK_OIL_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "luck_oil"));
-	public static final Item LUCK_OIL = Registry.register(Registries.ITEM, LUCK_OIL_KEY.getValue(), new ToolsmithItem(new Item.Settings().registryKey(LUCK_OIL_KEY), 20, "luck", true));
+	public static final Item LUCK_OIL = Registry.register(Registries.ITEM, LUCK_OIL_KEY.getValue(),
+			new ToolsmithItem(new Item.Settings().registryKey(LUCK_OIL_KEY), 12, "luck", true));
 
 	public static final ComponentType<Integer> SHARPER_USES = Registry.register(Registries.DATA_COMPONENT_TYPE, Identifier.of(MOD_ID, "sharper_uses"), ComponentType.<Integer>builder().codec(Codec.INT).build());
 	public static final ComponentType<String> SHARPER_COATING = Registry.register(Registries.DATA_COMPONENT_TYPE, Identifier.of(MOD_ID, "sharper_coating"), ComponentType.<String>builder().codec(Codec.STRING).build());
@@ -465,7 +473,7 @@ public class ToolsmithSharper implements ModInitializer {
 
 	private static File getConfigFile() { return FabricLoader.getInstance().getConfigDir().resolve("toolsmithsharper.properties").toFile(); }
 
-	private static void loadConfig() {
+	public static void loadConfig() {
 		try {
 			File file = getConfigFile();
 			if (file.exists()) {
@@ -481,7 +489,7 @@ public class ToolsmithSharper implements ModInitializer {
 		} catch (Exception e) { System.out.println("Error loading Toolsmith Sharper config"); }
 	}
 
-	private static void saveConfig() {
+	public static void saveConfig() {
 		try {
 			Properties props = new Properties();
 			props.setProperty("maxUses", String.valueOf(MAX_SHARPER_USES));

@@ -1,8 +1,26 @@
 {
-  "item.toolsmithsharper.whetstone": "Whetstone",
-  "item.toolsmithsharper.fire_oil": "Fire Oil",
-  "item.toolsmithsharper.poison_oil": "Poison Oil",
-  "item.toolsmithsharper.vampire_oil": "Vampire Oil",
-  "item.toolsmithsharper.frost_oil": "Frost Oil",
-  "item.toolsmithsharper.luck_oil": "Luck Oil"
+  "config.toolsmithsharper.title": "Toolsmith Sharper Configuration",
+  "config.toolsmithsharper.category.mechanics": "Core Mechanics",
+  "config.toolsmithsharper.category.balancing": "Power Balancing",
+
+  "config.toolsmithsharper.max_uses": "Max Honed Uses",
+  "config.toolsmithsharper.max_uses.tooltip": "Number of hits before basic sharpening wears off. (Default: 32)",
+
+  "config.toolsmithsharper.max_coating_uses": "Max Coating Uses",
+  "config.toolsmithsharper.max_coating_uses.tooltip": "Number of hits for oil coatings (Fire, Poison, etc.). (Default: 10)",
+
+  "config.toolsmithsharper.xp_cost": "XP Level Cost",
+  "config.toolsmithsharper.xp_cost.tooltip": "XP levels consumed per sharpening action. (Default: 1)",
+
+  "config.toolsmithsharper.repair_percentage": "Durability Repaired",
+  "config.toolsmithsharper.repair_percentage.tooltip": "Amount of item durability restored when sharpened. (Default: 10%)",
+
+  "config.toolsmithsharper.damage_multiplier": "Weapon Damage Bonus",
+  "config.toolsmithsharper.damage_multiplier.tooltip": "Extra attack damage granted to sharpened weapons (0.25 = +25%). (Default: 0.25)",
+
+  "config.toolsmithsharper.speed_boost": "Mining Speed Boost",
+  "config.toolsmithsharper.speed_boost.tooltip": "Flat speed added to tools mining efficiency. (Default: 2.0)",
+
+  "config.toolsmithsharper.suffix.damage": "Damage",
+  "config.toolsmithsharper.suffix.speed": "Speed"
 }
