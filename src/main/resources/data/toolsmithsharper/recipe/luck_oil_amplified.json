@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "minecraft:potion",
+      "components": {
+        "minecraft:potion_contents": "minecraft:water"
+      }
+    },
+    { "item": "minecraft:rabbit_foot" },
+    { "item": "minecraft:emerald_block" },
+    { "item": "minecraft:gold_block" }
+  ],
+  "result": {
+    "id": "toolsmithsharper:luck_oil",
+    "count": 1,
+    "components": {
+      "toolsmithsharper:sharper_coating_tier": "amplified"
+    }
+  }
+}

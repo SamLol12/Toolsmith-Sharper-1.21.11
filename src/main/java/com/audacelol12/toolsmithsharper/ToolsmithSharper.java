@@ -43,6 +43,9 @@ import net.minecraft.world.World;
 import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.RegistryKeys;
 import net.minecraft.item.consume.UseAction;
+import net.minecraft.component.type.ItemEnchantmentsComponent;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.enchantment.Enchantments;
 
 
 import java.io.File;
@@ -81,6 +84,10 @@ public class ToolsmithSharper implements ModInitializer {
 
 		@Override
 		public ActionResult use(World world, PlayerEntity user, Hand hand) {
+			if (!this.coating.equals("none")) {
+				return ActionResult.PASS;
+			}
+
 			ItemStack stack = user.getStackInHand(hand);
 			Hand otherHand = (hand == Hand.MAIN_HAND) ? Hand.OFF_HAND : Hand.MAIN_HAND;
 			ItemStack target = user.getStackInHand(otherHand);
@@ -145,6 +152,9 @@ public class ToolsmithSharper implements ModInitializer {
 	public static final RegistryKey<Item> FROST_OIL_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "frost_oil"));
 	public static final Item FROST_OIL = Registry.register(Registries.ITEM, FROST_OIL_KEY.getValue(), new ToolsmithItem(new Item.Settings().registryKey(FROST_OIL_KEY), 20, "frost", true));
 
+	public static final RegistryKey<Item> LUCK_OIL_KEY = RegistryKey.of(RegistryKeys.ITEM, Identifier.of(MOD_ID, "luck_oil"));
+	public static final Item LUCK_OIL = Registry.register(Registries.ITEM, LUCK_OIL_KEY.getValue(), new ToolsmithItem(new Item.Settings().registryKey(LUCK_OIL_KEY), 20, "luck", true));
+
 	public static final ComponentType<Integer> SHARPER_USES = Registry.register(Registries.DATA_COMPONENT_TYPE, Identifier.of(MOD_ID, "sharper_uses"), ComponentType.<Integer>builder().codec(Codec.INT).build());
 	public static final ComponentType<String> SHARPER_COATING = Registry.register(Registries.DATA_COMPONENT_TYPE, Identifier.of(MOD_ID, "sharper_coating"), ComponentType.<String>builder().codec(Codec.STRING).build());
 
@@ -172,6 +182,7 @@ public class ToolsmithSharper implements ModInitializer {
 				else if (offStack.isOf(POISON_OIL)) { isValidItem = true; coating = "poison"; }
 				else if (offStack.isOf(VAMPIRE_OIL)) { isValidItem = true; coating = "vampire"; }
 				else if (offStack.isOf(FROST_OIL)) { isValidItem = true; coating = "frost"; }
+				else if (offStack.isOf(LUCK_OIL)) { isValidItem = true; coating = "luck"; }
 
 				if (!isValidItem) {
 					if (world.isClient()) player.sendMessage(Text.literal("§cYou need Flint or a Coating Oil in your offhand!"), true);
@@ -218,10 +229,8 @@ public class ToolsmithSharper implements ModInitializer {
 						case "fire" -> livingTarget.setOnFireFor(tier.equals("amplified") ? 8 : 4);
 						case "poison" -> livingTarget.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, 100, tier.equals("amplified") ? 1 : 0));
 						case "vampire" -> player.heal(tier.equals("amplified") ? 2.0f : 1.0f);
-						case "frost" -> {
-							int amp = tier.equals("amplified") ? 1 : 0;
-							livingTarget.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 100, amp));
-						}
+						case "frost" -> livingTarget.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, 100, tier.equals("amplified") ? 1 : 0));
+						case "luck" -> player.addStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, 200, tier.equals("amplified") ? 1 : 0));
 					}
 				}
 				decrementUses(stack, player, world);
@@ -273,13 +282,17 @@ public class ToolsmithSharper implements ModInitializer {
 
 		if (!world.isClient()) {
 			String currentCoating = target.getOrDefault(SHARPER_COATING, "none");
-			applySharperEffect(target, coating, tier);
+			applySharperEffect(world, target, coating, tier);
 			if (target.isDamageable()) {
 				int repairAmount = (int) (target.getMaxDamage() * REPAIR_PERCENTAGE);
 				target.setDamage(Math.max(0, target.getDamage() - repairAmount));
 			}
 
 			if (!player.getAbilities().creativeMode) player.addExperienceLevels(-XP_COST);
+
+			if (!coating.equals("none")) {
+				world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1.0f, 1.2f);
+			}
 
 			switch (coating) {
 				case "none" -> {
@@ -290,11 +303,19 @@ public class ToolsmithSharper implements ModInitializer {
 				case "poison" -> world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_SPIDER_AMBIENT, SoundCategory.PLAYERS, 1.0f, 1.5f);
 				case "vampire" -> world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_GHAST_SCREAM, SoundCategory.PLAYERS, 0.5f, 1.5f);
 				case "frost" -> world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_POWDER_SNOW_BREAK, SoundCategory.PLAYERS, 0.5f, 2.0f);
+				case "luck" -> world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.PLAYERS, 1.0f, 1.2f);
 			}
 
-			if(coating.equals("fire")) ((ServerWorld)world).spawnParticles(ParticleTypes.FLAME, player.getX(), player.getY() + 1, player.getZ(), 10, 0.3, 0.3, 0.3, 0.05);
-			else if(coating.equals("frost")) ((ServerWorld)world).spawnParticles(ParticleTypes.SNOWFLAKE, player.getX(), player.getY() + 1, player.getZ(), 10, 0.3, 0.3, 0.3, 0.05);
-			else ((ServerWorld)world).spawnParticles(ParticleTypes.CRIT, player.getX(), player.getY() + 1, player.getZ(), 10, 0.3, 0.3, 0.3, 0.1);
+            switch (coating) {
+                case "fire" ->
+                        ((ServerWorld) world).spawnParticles(ParticleTypes.FLAME, player.getX(), player.getY() + 1, player.getZ(), 10, 0.3, 0.3, 0.3, 0.05);
+                case "frost" ->
+                        ((ServerWorld) world).spawnParticles(ParticleTypes.SNOWFLAKE, player.getX(), player.getY() + 1, player.getZ(), 10, 0.3, 0.3, 0.3, 0.05);
+                case "luck" ->
+                        ((ServerWorld) world).spawnParticles(ParticleTypes.HAPPY_VILLAGER, player.getX(), player.getY() + 1, player.getZ(), 15, 0.4, 0.4, 0.4, 0.1);
+                default ->
+                        ((ServerWorld) world).spawnParticles(ParticleTypes.CRIT, player.getX(), player.getY() + 1, player.getZ(), 10, 0.3, 0.3, 0.3, 0.1);
+            }
 		}
 		return ActionResult.SUCCESS;
 	}
@@ -308,29 +329,64 @@ public class ToolsmithSharper implements ModInitializer {
 	public static boolean isSharpenable(ItemStack stack) { return isWeapon(stack) || isTool(stack) || isAxe(stack); }
 	// =========================================================================
 
-	public static void applySharperEffect(ItemStack stack, String coating, String tier) {
+	public static void applySharperEffect(World world, ItemStack stack, String coating, String tier) {
 		int usesToApply = coating.equals("none") ? (isTool(stack) ? MAX_SHARPER_USES * 2 : MAX_SHARPER_USES) : (tier.equals("extended") ? MAX_COATING_USES * 2 : MAX_COATING_USES);
 		stack.set(SHARPER_USES, usesToApply);
-		if (coating.equals("none")) { stack.remove(SHARPER_COATING); stack.remove(SHARPER_COATING_TIER); }
-		else { stack.set(SHARPER_COATING, coating); stack.set(SHARPER_COATING_TIER, tier); }
 
-		AttributeModifiersComponent.Builder builder = getModifiersBuilder(stack);
-		if (isWeapon(stack) || isAxe(stack)) builder.add(EntityAttributes.ATTACK_DAMAGE, new EntityAttributeModifier(SHARPER_DAMAGE_ID, DAMAGE_MULTIPLIER, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE), AttributeModifierSlot.MAINHAND);
-		if (isTool(stack) || isAxe(stack)) builder.add(EntityAttributes.MINING_EFFICIENCY, new EntityAttributeModifier(SHARPER_SPEED_ID, SPEED_BOOST, EntityAttributeModifier.Operation.ADD_VALUE), AttributeModifierSlot.MAINHAND);
-		stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, builder.build());
+		if (coating.equals("none")) {
+			stack.remove(SHARPER_COATING);
+			stack.remove(SHARPER_COATING_TIER);
+		} else {
+			stack.set(SHARPER_COATING, coating);
+			stack.set(SHARPER_COATING_TIER, tier);
+		}
+
+		updateEnchantmentLevel(world, stack, Enchantments.FORTUNE, 0);
+		updateEnchantmentLevel(world, stack, Enchantments.LOOTING, 0);
+
+		if (coating.equals("luck")) {
+			int level = tier.equals("amplified") ? 3 : 1;
+			if (isWeapon(stack)) updateEnchantmentLevel(world, stack, Enchantments.LOOTING, level);
+			else updateEnchantmentLevel(world, stack, Enchantments.FORTUNE, level);
+		}
+
+		AttributeModifiersComponent.Builder attrBuilder = getModifiersBuilder(stack);
+		if (!coating.equals("luck")) {
+			if (isWeapon(stack) || isAxe(stack)) {
+				attrBuilder.add(EntityAttributes.ATTACK_DAMAGE,
+						new EntityAttributeModifier(SHARPER_DAMAGE_ID, DAMAGE_MULTIPLIER, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE),
+						AttributeModifierSlot.MAINHAND);
+			}
+			if (isTool(stack) || isAxe(stack)) {
+				attrBuilder.add(EntityAttributes.MINING_EFFICIENCY,
+						new EntityAttributeModifier(SHARPER_SPEED_ID, SPEED_BOOST, EntityAttributeModifier.Operation.ADD_VALUE),
+						AttributeModifierSlot.MAINHAND);
+			}
+		}
+		stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, attrBuilder.build());
 	}
 
-	public static void decrementUses(ItemStack stack, net.minecraft.entity.player.PlayerEntity player, net.minecraft.world.World world) {
+	public static void decrementUses(ItemStack stack, PlayerEntity player, World world) {
 		if (stack.contains(SHARPER_USES)) {
 			int current = stack.getOrDefault(SHARPER_USES, 0);
 			if (current <= 1) {
+				String currentCoating = stack.getOrDefault(SHARPER_COATING, "none");
+
+				if (currentCoating.equals("luck")) {
+					updateEnchantmentLevel(world, stack, Enchantments.FORTUNE, 0);
+					updateEnchantmentLevel(world, stack, Enchantments.LOOTING, 0);
+				}
+
 				stack.remove(SHARPER_USES);
 				stack.remove(SHARPER_COATING);
 				stack.remove(SHARPER_COATING_TIER);
+
 				AttributeModifiersComponent.Builder builder = getModifiersBuilder(stack);
 				stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, builder.build());
 				world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 0.6f, 1.8f);
-			} else stack.set(SHARPER_USES, current - 1);
+			} else {
+				stack.set(SHARPER_USES, current - 1);
+			}
 		}
 	}
 
@@ -343,6 +399,17 @@ public class ToolsmithSharper implements ModInitializer {
 			}
 		}
 		return builder;
+	}
+
+	private static void updateEnchantmentLevel(World world, ItemStack stack, RegistryKey<Enchantment> enchantmentKey, int level) {
+		Registry<Enchantment> registry = world.getRegistryManager().getOrThrow(RegistryKeys.ENCHANTMENT);
+
+		ItemEnchantmentsComponent currentEnchants = stack.getOrDefault(DataComponentTypes.ENCHANTMENTS, ItemEnchantmentsComponent.DEFAULT);
+		ItemEnchantmentsComponent.Builder builder = new ItemEnchantmentsComponent.Builder(currentEnchants);
+
+		builder.set(registry.getOrThrow(enchantmentKey), level);
+
+		stack.set(DataComponentTypes.ENCHANTMENTS, builder.build());
 	}
 
 	// =========================================================================

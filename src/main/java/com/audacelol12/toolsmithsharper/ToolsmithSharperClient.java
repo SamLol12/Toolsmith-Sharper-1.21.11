@@ -19,26 +19,32 @@ public class ToolsmithSharperClient implements ClientModInitializer {
                 else if (tier.equals("extended")) suffix = " (Extended)";
 
                 if (uses > 0) {
+                    lines.add(Text.literal(""));
+
                     switch (coating) {
                         case "fire" -> {
-                            lines.add(Text.literal("§7Effect: §cFire Oil" + suffix));
-                            lines.add(Text.literal("§7Oil Uses Remaining: §c" + uses));
+                            lines.add(Text.literal("§6§l♦ §cEffect: Fire Oil" + suffix));
+                            lines.add(Text.literal("  §7Charges: §c" + uses));
                         }
                         case "poison" -> {
-                            lines.add(Text.literal("§7Effect: §aPoison Oil" + suffix));
-                            lines.add(Text.literal("§7Oil Uses Remaining: §a" + uses));
+                            lines.add(Text.literal("§2§l♦ §2Effect: Poison Oil" + suffix));
+                            lines.add(Text.literal("  §7Charges: §2" + uses));
                         }
                         case "vampire" -> {
-                            lines.add(Text.literal("§7Effect: §4Vampire Oil" + suffix));
-                            lines.add(Text.literal("§7Oil Uses Remaining: §4" + uses));
+                            lines.add(Text.literal("§4§l♦ §4Effect: Vampire Oil" + suffix));
+                            lines.add(Text.literal("  §7Charges: §4" + uses));
                         }
                         case "frost" -> {
-                            lines.add(Text.literal("§7Effect: §bFrost Oil" + suffix));
-                            lines.add(Text.literal("§7Oil Uses Remaining: §b" + uses));
+                            lines.add(Text.literal("§1§l♦ §9Effect: Frost Oil" + suffix));
+                            lines.add(Text.literal("  §7Charges: §9" + uses));
+                        }
+                        case "luck" -> {
+                            lines.add(Text.literal("§6§l♦ §eEffect: Fortune Oil" + suffix));
+                            lines.add(Text.literal("  §7Charges: §e" + uses));
                         }
                         default -> {
-                            lines.add(Text.literal("§7Effect: §bHoned"));
-                            lines.add(Text.literal("§7Honed Uses Remaining: §b" + uses));
+                            lines.add(Text.literal("§8§l♦ §7Status: Honed Edge"));
+                            lines.add(Text.literal("  §7Charges: §7" + uses));
                         }
                     }
                 }

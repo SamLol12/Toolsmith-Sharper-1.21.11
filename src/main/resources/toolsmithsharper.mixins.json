@@ -3,7 +3,7 @@
 	"package": "com.audacelol12.toolsmithsharper.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-		"ExampleMixin"
+      "ItemMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
