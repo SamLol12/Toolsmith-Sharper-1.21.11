@@ -46,7 +46,7 @@ import net.minecraft.item.consume.UseAction;
 import net.minecraft.component.type.ItemEnchantmentsComponent;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantments;
-
+import net.minecraft.world.biome.BiomeKeys;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -291,7 +291,7 @@ public class ToolsmithSharper implements ModInitializer {
 			if (!player.getAbilities().creativeMode) player.addExperienceLevels(-XP_COST);
 
 			if (!coating.equals("none")) {
-				world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 1.0f, 1.2f);
+				world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BLOCK_FIRE_EXTINGUISH, SoundCategory.PLAYERS, 0.8f, 1.2f);
 			}
 
 			switch (coating) {
@@ -369,7 +369,36 @@ public class ToolsmithSharper implements ModInitializer {
 	public static void decrementUses(ItemStack stack, PlayerEntity player, World world) {
 		if (stack.contains(SHARPER_USES)) {
 			int current = stack.getOrDefault(SHARPER_USES, 0);
-			if (current <= 1) {
+			String coating = stack.getOrDefault(SHARPER_COATING, "none");
+			int drainAmount = 1;
+
+			if ((coating.equals("fire") || coating.equals("poison")) && player.isTouchingWaterOrRain()) {
+				drainAmount = 2;
+				net.minecraft.particle.ParticleEffect pType = coating.equals("fire") ? ParticleTypes.SMOKE : ParticleTypes.BUBBLE;
+				((ServerWorld)world).spawnParticles(pType, player.getX(), player.getY() + 1, player.getZ(), 3, 0.1, 0.1, 0.1, 0.02);
+			}
+			else if (coating.equals("poison")) {
+				var biomeEntry = world.getBiome(player.getBlockPos());
+				boolean isSwamp = biomeEntry.matchesKey(BiomeKeys.SWAMP) || biomeEntry.matchesKey(BiomeKeys.MANGROVE_SWAMP);
+				boolean isJungle = biomeEntry.matchesKey(BiomeKeys.JUNGLE) || biomeEntry.matchesKey(BiomeKeys.SPARSE_JUNGLE) || biomeEntry.matchesKey(BiomeKeys.BAMBOO_JUNGLE);
+
+				if (isSwamp || isJungle || world.isRaining()) {
+					if (world.random.nextFloat() < 0.5f) drainAmount = 0;
+				}
+			}
+			else if (coating.equals("frost")) {
+				var biomeEntry = world.getBiome(player.getBlockPos());
+				if (biomeEntry.value().isCold(player.getBlockPos(), world.getSeaLevel())) {
+					if (world.random.nextFloat() < 0.5f) drainAmount = 0;
+				}
+			}
+			else if ((coating.equals("luck") || coating.equals("vampire")) && world.isNight()) {
+				if (world.random.nextFloat() < (coating.equals("luck") ? 0.3f : 0.5f)) drainAmount = 0;
+			}
+
+			if (drainAmount == 0) return;
+
+			if (current <= drainAmount) {
 				String currentCoating = stack.getOrDefault(SHARPER_COATING, "none");
 
 				if (currentCoating.equals("luck")) {
@@ -383,9 +412,10 @@ public class ToolsmithSharper implements ModInitializer {
 
 				AttributeModifiersComponent.Builder builder = getModifiersBuilder(stack);
 				stack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, builder.build());
+
 				world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ITEM_BREAK, SoundCategory.PLAYERS, 0.6f, 1.8f);
 			} else {
-				stack.set(SHARPER_USES, current - 1);
+				stack.set(SHARPER_USES, current - drainAmount);
 			}
 		}
 	}
