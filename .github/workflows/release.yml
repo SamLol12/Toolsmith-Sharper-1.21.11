@@ -11,6 +11,7 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'norelease')"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -48,9 +49,11 @@ jobs:
           echo "## ✨ What's New in Version ${{ env.VERSION }}" > CHANGELOG.md
           echo "" >> CHANGELOG.md
 
-          ALL_COMMITS=$(git log $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD --pretty=format:"%s" | sed 's/ + /\n/g')
+          ALL_COMMITS=$(git log $(git describe --tags --abbrev=0 2>/dev/null || git rev-list --max-parents=0 HEAD)..HEAD --pretty=format:"%s" | \
+            sed 's/ + /\n/g' | \
+            sed -E 's/^([a-z]+)(!)?:? /\1\2: /')
 
-          # --- ⚠️ BREAKING CHANGES (Recherche le '!') ---
+          # --- ⚠️ BREAKING CHANGES ---
           echo "$ALL_COMMITS" | grep "!" > breaking.txt || true
           if [ -s breaking.txt ]; then
             echo "### ⚠️ BREAKING CHANGES" >> CHANGELOG.md
@@ -58,16 +61,17 @@ jobs:
             echo "" >> CHANGELOG.md
           fi
 
-          # --- 🚀 FEATURES (feat:) ---
-          echo "$ALL_COMMITS" | grep "^feat" | grep -v "!" > feat.txt || true
+          # --- 🚀 FEATURES ---
+          # On cherche "feat:" (maintenant qu'on est sûr qu'il y a un :)
+          echo "$ALL_COMMITS" | grep "^feat:" | grep -v "!" > feat.txt || true
           if [ -s feat.txt ]; then
             echo "### 🚀 New Features" >> CHANGELOG.md
             sed 's/^/* /' feat.txt >> CHANGELOG.md
             echo "" >> CHANGELOG.md
           fi
 
-          # --- 🔧 FIXES (fix:) ---
-          echo "$ALL_COMMITS" | grep "^fix" | grep -v "!" > fix.txt || true
+          # --- 🔧 FIXES ---
+          echo "$ALL_COMMITS" | grep "^fix:" | grep -v "!" > fix.txt || true
           if [ -s fix.txt ]; then
             echo "### 🔧 Bug Fixes" >> CHANGELOG.md
             sed 's/^/* /' fix.txt >> CHANGELOG.md
