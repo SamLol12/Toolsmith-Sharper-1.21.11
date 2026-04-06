@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+      - "1.20.1"
+      - "1.21.11"
+      - "26.1.1"
 
 permissions:
   contents: write
@@ -30,12 +33,20 @@ jobs:
       - name: Extract Metadata
         id: metadata
         run: |
-          VERSION=$(grep 'mod_version' gradle.properties | cut -d'=' -f2)
-          MC_VERSION=$(grep 'minecraft_version' gradle.properties | cut -d'=' -f2)
-          V_TYPE=$(grep 'version_type' gradle.properties | cut -d'=' -f2)
+          # tr -d '\r' supprime les éventuels retours chariots invisibles de Windows qui corrompent les variables
+          VERSION=$(grep '^mod_version' gradle.properties | cut -d'=' -f2 | tr -d '\r')
+          MC_VERSION=$(grep '^minecraft_version' gradle.properties | cut -d'=' -f2 | tr -d '\r')
+          V_TYPE=$(grep '^version_type' gradle.properties | cut -d'=' -f2 | tr -d '\r')
+          
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV
           echo "VERSION_TYPE=$V_TYPE" >> $GITHUB_ENV
+
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "IS_MAIN=true" >> $GITHUB_ENV
+          else
+            echo "IS_MAIN=false" >> $GITHUB_ENV
+          fi
 
       # 2. Build
       - name: Make gradlew executable
@@ -108,7 +119,7 @@ jobs:
           name: Release ${{ env.VERSION }}
           body_path: CHANGELOG.md
           files: build/libs/*.jar
-          make_latest: true
+          make_latest: ${{ env.IS_MAIN == 'true' }} 
           prerelease: ${{ env.VERSION_TYPE != 'release' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
