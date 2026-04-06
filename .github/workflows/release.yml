@@ -32,10 +32,12 @@ jobs:
         run: |
           VERSION=$(grep 'mod_version' gradle.properties | cut -d'=' -f2)
           MC_VERSION=$(grep 'minecraft_version' gradle.properties | cut -d'=' -f2)
+          V_TYPE=$(grep 'version_type' gradle.properties | cut -d'=' -f2)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "MC_VERSION=$MC_VERSION" >> $GITHUB_ENV
+          echo "VERSION_TYPE=$V_TYPE" >> $GITHUB_ENV
 
-      # 2. Build Process
+      # 2. Build
       - name: Make gradlew executable
         run: chmod +x gradlew
 
@@ -62,7 +64,6 @@ jobs:
           fi
 
           # --- 🚀 FEATURES ---
-          # On cherche "feat:" (maintenant qu'on est sûr qu'il y a un :)
           echo "$ALL_COMMITS" | grep "^feat:" | grep -v "!" > feat.txt || true
           if [ -s feat.txt ]; then
             echo "### 🚀 New Features" >> CHANGELOG.md
@@ -94,8 +95,10 @@ jobs:
             echo "" >> CHANGELOG.md
           fi
 
-          echo "---" >> CHANGELOG.md
-          echo "*Compiled for Minecraft ${{ env.MC_VERSION }}*" >> CHANGELOG.md
+          # Modrinth Capture
+          echo "CHANGELOG_CONTENT<<EOF" >> $GITHUB_ENV
+          cat CHANGELOG.md >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
       # 4. GitHub Release Creation
       - name: Create Release
@@ -106,5 +109,23 @@ jobs:
           body_path: CHANGELOG.md
           files: build/libs/*.jar
           make_latest: true
+          prerelease: ${{ env.VERSION_TYPE != 'release' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      # 5. Modrinth Upload
+      - name: Upload to Modrinth
+        uses: modrinth/minotaur@v2
+        with:
+          token: ${{ secrets.MODRINTH_TOKEN }}
+          project-id: "45jKiDQH" 
+          version-number: ${{ env.VERSION }}
+          version-type: ${{ env.VERSION_TYPE }}
+          version-title: "Toolsmith Sharper ${{ env.VERSION }}"
+          changelog: ${{ env.CHANGELOG_CONTENT }}
+          files: |
+            build/libs/*.jar
+          loaders: |
+            fabric
+          game-versions: |
+            ${{ env.MC_VERSION }}

@@ -86,9 +86,10 @@ publishing {
 // Task to increment the mod version in gradle.properties
 /*
  * Usage: [major].[minor].[patch]
- *   ./gradlew releaseMod -Ptype=patch  (default, increments patch version)
- *   ./gradlew releaseMod -Ptype=minor  (increments minor version and resets patch)
- *   ./gradlew releaseMod -Ptype=major  (increments major version and resets minor and patch)
+ *   ./gradlew releaseMod -Ptype=patch  			(default, increments patch version)
+ *   ./gradlew releaseMod -Ptype=minor  			(increments minor version and resets patch)
+ *   ./gradlew releaseMod -Ptype=major  			(increments major version and resets minor and patch)
+ *   ./gradlew releaseMod -Ptype=x -Pvtype=beta  	(sets version_type to "beta" or "alpha", default is "release")
  */
 task incrementVersion {
     doLast {
@@ -97,37 +98,37 @@ task incrementVersion {
         props.load(propsFile.newDataInputStream())
 
         def currentVersion = props.getProperty('mod_version')
+        def currentVType = props.getProperty('version_type') ?: 'release'
+
         def parts = currentVersion.split('\\.') 
-        
         def major = parts[0] as Integer
         def minor = parts[1] as Integer
         def patch = parts[2] as Integer
 
-        def versionType = project.hasProperty('type') ? project.property('type') : 'patch'
-
-        if (versionType == 'major') {
-            major += 1
-            minor = 0
-            patch = 0
-        } else if (versionType == 'minor') {
-            minor += 1
-            patch = 0
-        } else {
-            patch += 1
+        if (project.hasProperty('type')) {
+            def type = project.property('type')
+            if (type == 'major') { major++; minor = 0; patch = 0 }
+            else if (type == 'minor') { minor++; patch = 0 }
+            else if (type == 'patch') { patch++ }
         }
 
         def newVersion = "${major}.${minor}.${patch}"
+		def newVType = project.hasProperty('vtype') ? project.property('vtype') : currentVType
 
-        def content = propsFile.text.replaceFirst("mod_version=$currentVersion", "mod_version=$newVersion")
+        def content = propsFile.text
+        content = content.replaceFirst("mod_version=$currentVersion", "mod_version=$newVersion")
+        content = content.replaceFirst("version_type=$currentVType", "version_type=$newVType")
         propsFile.text = content
 
-        println "Next (${versionType}) for the next build : ${currentVersion} -> ${newVersion}"
+        println "Successfully updated gradle.properties:"
+        println "  Version: ${currentVersion} -> ${newVersion}"
+        println "  Type:    ${currentVType} -> ${newVType}"
     }
 }
 
 task releaseMod {
     group = "build"
-    description = "Builds the mod and increments the version for the next development cycle. Usage: ./gradlew releaseMod -Ptype=[patch|minor|major] (default is patch)"
+    description = "Builds and increments mod metadata. Usage: -Ptype=[patch|minor|major] -Pvtype=[release|beta|alpha]"
     
     dependsOn 'build'
     finalizedBy 'incrementVersion'
