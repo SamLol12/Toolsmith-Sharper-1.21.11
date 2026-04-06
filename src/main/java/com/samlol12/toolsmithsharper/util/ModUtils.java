@@ -146,7 +146,7 @@ public class ModUtils {
         }
 
         AttributeModifiersComponent.Builder attrBuilder = getModifiersBuilder(stack);
-        if (!coating.equals("luck")) {
+        if (coating.equals("none")) {
             if (isWeapon(stack) || isAxe(stack)) {
                 attrBuilder.add(EntityAttributes.ATTACK_DAMAGE,
                         new EntityAttributeModifier(ModComponents.SHARPER_DAMAGE_ID, ModConfig.DAMAGE_MULTIPLIER, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE),

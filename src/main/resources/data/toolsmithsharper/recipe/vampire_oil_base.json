@@ -3,8 +3,11 @@
   "category": "equipment",
   "ingredients": [
     {
-      "item": "minecraft:potion",
-      "components": { "minecraft:potion_contents": "minecraft:regeneration" }
+      "fabric:type": "fabric:components",
+      "base": "minecraft:potion",
+      "components": {
+        "minecraft:potion_contents": "minecraft:regeneration"
+      }
     },
     "minecraft:sugar",
     "minecraft:sugar",

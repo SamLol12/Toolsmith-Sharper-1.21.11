@@ -3,13 +3,15 @@
   "category": "equipment",
   "ingredients": [
     {
-      "item": "minecraft:potion",
+      "fabric:type": "fabric:components",
+      "base": "minecraft:potion",
       "components": {
         "minecraft:potion_contents": "minecraft:water"
       }
     },
-    { "item": "minecraft:rabbit_foot" },
-    { "item": "minecraft:emerald" }
+    "minecraft:rabbit_foot",
+    "minecraft:emerald",
+    "minecraft:gold_nugget"
   ],
   "result": {
     "id": "toolsmithsharper:luck_oil",

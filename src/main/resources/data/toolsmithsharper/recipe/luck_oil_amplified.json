@@ -3,14 +3,15 @@
   "category": "equipment",
   "ingredients": [
     {
-      "item": "minecraft:potion",
+      "fabric:type": "fabric:components",
+      "base": "minecraft:potion",
       "components": {
         "minecraft:potion_contents": "minecraft:water"
       }
     },
-    { "item": "minecraft:rabbit_foot" },
-    { "item": "minecraft:emerald_block" },
-    { "item": "minecraft:gold_block" }
+    "minecraft:rabbit_foot",
+    "minecraft:emerald_block",
+    "minecraft:gold_block" 
   ],
   "result": {
     "id": "toolsmithsharper:luck_oil",

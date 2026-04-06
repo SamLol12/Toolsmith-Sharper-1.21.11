@@ -19,6 +19,9 @@
 		"main": [
 			"com.samlol12.toolsmithsharper.ToolsmithSharper"
 		],
+		"client": [
+			"com.samlol12.toolsmithsharper.ToolsmithSharperClient"
+		],
 		"modmenu": [
 			"com.samlol12.toolsmithsharper.ModMenuIntegration"
 		]
