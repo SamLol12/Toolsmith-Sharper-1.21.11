@@ -114,6 +114,49 @@ githubRelease {
     releaseAssets = fileTree(dir: 'build/libs', include: '*.jar')
 }
 
+task generateChangelog {
+    doLast {
+        def mcVersion = project.minecraft_version
+        def lastTag = ""
+        try {
+            def p = "git describe --tags --abbrev=0 --match *+mc${mcVersion}".execute()
+            p.waitFor()
+            lastTag = p.exitValue() == 0 ? p.text.trim() : "git rev-list --max-parents=0 HEAD".execute().text.trim()
+        } catch (Exception e) {}
+
+        def cmd = lastTag ? "git log ${lastTag}..HEAD --pretty=format:%s" : "git log --pretty=format:%s"
+        def process = cmd.execute()
+        process.waitFor()
+        def commits = process.text.readLines()
+
+        def breaking = [], feats = [], fixes = [], refacs = [], miscs = [], others = []
+        commits.each { commit ->
+			if (commit.startsWith("Merge ") || commit.startsWith("merge ") || commit.startsWith("norelease") || commit.startsWith("workflow")) {
+                return
+            }
+
+            if (commit.contains("!")) breaking << "* ${commit}"
+            else if (commit.startsWith("feat:")) feats << "* ${commit}"
+            else if (commit.startsWith("fix:")) fixes << "* ${commit}"
+            else if (commit.startsWith("perf:") || commit.startsWith("refactor:") || commit.startsWith("refact:")) refacs << "* ${commit}"
+            else if (commit.startsWith("docs:") || commit.startsWith("chore:") || commit.startsWith("build:") || commit.startsWith("ci:")) miscs << "* ${commit}"
+            else others << "* ${commit}"
+        }
+
+        def changelog = new StringBuilder()
+        changelog.append("## ✨ What's New in Version ${project.mod_version} (MC ${mcVersion})\n\n")
+        if (breaking) changelog.append("### ⚠️ BREAKING CHANGES\n").append(breaking.join("\n")).append("\n\n")
+        if (feats) changelog.append("### 🚀 New Features\n").append(feats.join("\n")).append("\n\n")
+        if (fixes) changelog.append("### 🔧 Bug Fixes\n").append(fixes.join("\n")).append("\n\n")
+        if (refacs) changelog.append("### ⚡ Performance & Refactoring\n").append(refacs.join("\n")).append("\n\n")
+        if (miscs) changelog.append("### 🛠 Maintenance\n").append(miscs.join("\n")).append("\n\n")
+		if (others) changelog.append("### 📦 Others\n").append(others.join("\n")).append("\n\n")
+
+        file("CHANGELOG.md").text = changelog.toString()
+        println "✅ Changelog généré dans le fichier CHANGELOG.md"
+    }
+}
+
 // Task to increment the mod version in gradle.properties
 /*
  * Usage: [major].[minor].[patch]
@@ -165,62 +208,49 @@ task incrementVersion {
     }
 }
 
-task generateChangelog {
-    doLast {
-        def mcVersion = project.minecraft_version
-        def lastTag = ""
-        try {
-            def p = "git describe --tags --abbrev=0 --match *+mc${mcVersion}".execute()
-            p.waitFor()
-            lastTag = p.exitValue() == 0 ? p.text.trim() : "git rev-list --max-parents=0 HEAD".execute().text.trim()
-        } catch (Exception e) {}
-
-        def cmd = lastTag ? "git log ${lastTag}..HEAD --pretty=format:%s" : "git log --pretty=format:%s"
-        def process = cmd.execute()
-        process.waitFor()
-        def commits = process.text.readLines()
-
-        def breaking = [], feats = [], fixes = [], refacs = [], miscs = [], others = []
-        commits.each { commit ->
-			if (commit.startsWith("Merge ") || commit.startsWith("merge ") || commit.startsWith("norelease") || commit.startsWith("workflow")) {
-                return
-            }
-
-            if (commit.contains("!")) breaking << "* ${commit}"
-            else if (commit.startsWith("feat:")) feats << "* ${commit}"
-            else if (commit.startsWith("fix:")) fixes << "* ${commit}"
-            else if (commit.startsWith("perf:") || commit.startsWith("refactor:") || commit.startsWith("refact:")) refacs << "* ${commit}"
-            else if (commit.startsWith("docs:") || commit.startsWith("chore:") || commit.startsWith("build:") || commit.startsWith("ci:")) miscs << "* ${commit}"
-            else others << "* ${commit}"
-        }
-
-        def changelog = new StringBuilder()
-        changelog.append("## ✨ What's New in Version ${project.mod_version} (MC ${mcVersion})\n\n")
-        if (breaking) changelog.append("### ⚠️ BREAKING CHANGES\n").append(breaking.join("\n")).append("\n\n")
-        if (feats) changelog.append("### 🚀 New Features\n").append(feats.join("\n")).append("\n\n")
-        if (fixes) changelog.append("### 🔧 Bug Fixes\n").append(fixes.join("\n")).append("\n\n")
-        if (refacs) changelog.append("### ⚡ Performance & Refactoring\n").append(refacs.join("\n")).append("\n\n")
-        if (miscs) changelog.append("### 🛠 Maintenance\n").append(miscs.join("\n")).append("\n\n")
-		if (others) changelog.append("### 📦 Others\n").append(others.join("\n")).append("\n\n")
-
-        file("CHANGELOG.md").text = changelog.toString()
-        println "✅ Changelog généré dans le fichier CHANGELOG.md"
-    }
-}
-
 task releaseMod {
     group = "build"
-    description = "Génère le changelog, build, publie sur GitHub et Modrinth, puis incrémente la version."
+    description = "Génère le changelog, build, et publie sur GitHub et Modrinth."
     
     dependsOn 'build', 'generateChangelog'
     
     tasks.named('modrinth').configure { mustRunAfter 'build', 'generateChangelog' }
     tasks.named('githubRelease').configure { mustRunAfter 'build', 'generateChangelog' }
-    tasks.named('incrementVersion').configure { mustRunAfter 'modrinth', 'githubRelease' }
 
-    finalizedBy 'modrinth', 'githubRelease', 'incrementVersion'
+    finalizedBy 'modrinth', 'githubRelease'
     
     doLast {
         println "🚀 Lancement de la séquence de Release..."
     }
 }
+
+/* ==============================================================================
+ * 🚀 GUIDE DE PUBLICATION (RELEASE WORKFLOW)
+ * ==============================================================================
+ * Pour publier une nouvelle version du mod, suivez ces DEUX étapes le jour de la sortie :
+ *
+ * ÉTAPE 1 : Préparer et incrémenter la nouvelle version
+ * -----------------------------------------------------
+ * Mettez à jour le fichier gradle.properties vers la NOUVELLE version.
+ * Le script s'occupe de modifier le fichier et de faire le commit Git.
+ * * Usages :
+ * ./gradlew incrementVersion -Ptype=patch  -> (ex: 1.1.1 -> 1.1.2) [PAR DÉFAUT]
+ * ./gradlew incrementVersion -Ptype=minor  -> (ex: 1.1.1 -> 1.2.0)
+ * ./gradlew incrementVersion -Ptype=major  -> (ex: 1.1.1 -> 2.0.0)
+ * * Optionnel : Vous pouvez aussi changer le type de version (release, beta, alpha) :
+ * ./gradlew incrementVersion -Ptype=minor -Pvtype=beta
+ *
+ * ÉTAPE 2 : Générer le changelog et Publier
+ * -----------------------------------------------------
+ * Cette commande va compiler le mod avec la nouvelle version définie à l'étape 1,
+ * générer le CHANGELOG.md en lisant vos commits Git (feat:, fix:, etc.),
+ * puis publier le tout simultanément sur GitHub Releases et Modrinth.
+ * * Usage :
+ * ./gradlew releaseMod
+ *
+ * ÉTAPE 3 (Rappel) : Synchroniser avec GitHub
+ * -----------------------------------------------------
+ * À la fin du processus, n'oubliez pas de faire un 'git pull' pour récupérer 
+ * le tag de version créé par GitHub, suivi d'un 'git push' pour envoyer votre 
+ * commit de changement de version (gradle.properties).
+ * ============================================================================== */
