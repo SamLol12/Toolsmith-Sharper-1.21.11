@@ -153,7 +153,7 @@ task generateChangelog {
 		if (others) changelog.append("### 📦 Others\n").append(others.join("\n")).append("\n\n")
 
         file("CHANGELOG.md").text = changelog.toString()
-        println "✅ Changelog généré dans le fichier CHANGELOG.md"
+        println "CHANGELOG.md generated successfully based on Git commits since ${lastTag ?: 'the beginning of the repository'}."
     }
 }
 
@@ -201,9 +201,9 @@ task incrementVersion {
 		try {
             "git add gradle.properties".execute().waitFor()
             "git commit -m \"chore: passage à la version ${newVersion}\"".execute().waitFor()
-            println "✅ Fichier gradle.properties commité avec succès !"
+            println "Automatically committed gradle.properties with new version ${newVersion}."
         } catch (Exception e) {
-            println "⚠️ Impossible de commit automatiquement le fichier gradle.properties. Fais-le manuellement."
+            println "Failed to commit gradle.properties. Please commit the changes manually."
         }
     }
 }
@@ -220,7 +220,7 @@ task releaseMod {
     finalizedBy 'modrinth', 'githubRelease'
     
     doLast {
-        println "🚀 Lancement de la séquence de Release avec le changelog actuel..."
+        println "Release workflow initiated... Building the mod and publishing to GitHub and Modrinth using the generated CHANGELOG.md."
     }
 }
 
