@@ -1,6 +1,8 @@
 plugins {
-	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
-	id 'maven-publish'
+    id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+    id 'maven-publish'
+    id "com.modrinth.minotaur" version "2.9.0"
+    id "com.github.breadmoirai.github-release" version "2.4.1"
 }
 
 version = "${project.mod_version}-${project.version_type}"
@@ -81,6 +83,37 @@ publishing {
 	}
 }
 
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN") ?: "TOKEN_MANQUANT"
+    projectId = "45jKiDQH" 
+    versionNumber = "v${project.mod_version}+mc${project.minecraft_version}"
+    versionType = project.version_type
+    uploadFile = remapJar
+    gameVersions = [project.minecraft_version]
+    loaders = ["fabric"]
+	dependencies {
+        // scope.type
+        // The scope can be `required`, `optional`, `incompatible`, or `embedded`
+        required.project "fabric-api"
+        required.project "architectury-api"
+        required.project "cloth-config"
+        required.project "modmenu"
+    }
+    changelog = provider { file("CHANGELOG.md").exists() ? file("CHANGELOG.md").text : "" }
+}
+
+githubRelease {
+    token = System.getenv("GITHUB_TOKEN") ?: "TOKEN_MANQUANT"
+    owner = "SamLol12"
+    repo = "Toolsmith-Sharper"
+    tagName = "v${project.mod_version}+mc${project.minecraft_version}"
+    targetCommitish = "main"
+    releaseName = "[${project.minecraft_version}] Toolsmith Sharper v${project.mod_version}"
+    body = provider { file("CHANGELOG.md").exists() ? file("CHANGELOG.md").text : "" }
+    prerelease = project.version_type != 'release'
+    releaseAssets = fileTree(dir: 'build/libs', include: '*.jar')
+}
+
 // Task to increment the mod version in gradle.properties
 /*
  * Usage: [major].[minor].[patch]
@@ -121,13 +154,73 @@ task incrementVersion {
         println "Successfully updated gradle.properties:"
         println "  Version: ${currentVersion} -> ${newVersion}"
         println "  Type:    ${currentVType} -> ${newVType}"
+
+		try {
+            "git add gradle.properties".execute().waitFor()
+            "git commit -m \"chore: passage à la version ${newVersion}\"".execute().waitFor()
+            println "✅ Fichier gradle.properties commité avec succès !"
+        } catch (Exception e) {
+            println "⚠️ Impossible de commit automatiquement le fichier gradle.properties. Fais-le manuellement."
+        }
+    }
+}
+
+task generateChangelog {
+    doLast {
+        def mcVersion = project.minecraft_version
+        def lastTag = ""
+        try {
+            def p = "git describe --tags --abbrev=0 --match *+mc${mcVersion}".execute()
+            p.waitFor()
+            lastTag = p.exitValue() == 0 ? p.text.trim() : "git rev-list --max-parents=0 HEAD".execute().text.trim()
+        } catch (Exception e) {}
+
+        def cmd = lastTag ? "git log ${lastTag}..HEAD --pretty=format:%s" : "git log --pretty=format:%s"
+        def process = cmd.execute()
+        process.waitFor()
+        def commits = process.text.readLines()
+
+        def breaking = [], feats = [], fixes = [], refacs = [], miscs = [], others = []
+        commits.each { commit ->
+			if (commit.startsWith("Merge ") || commit.startsWith("merge ") || commit.startsWith("norelease") || commit.startsWith("workflow")) {
+                return
+            }
+
+            if (commit.contains("!")) breaking << "* ${commit}"
+            else if (commit.startsWith("feat:")) feats << "* ${commit}"
+            else if (commit.startsWith("fix:")) fixes << "* ${commit}"
+            else if (commit.startsWith("perf:") || commit.startsWith("refactor:") || commit.startsWith("refact:")) refacs << "* ${commit}"
+            else if (commit.startsWith("docs:") || commit.startsWith("chore:") || commit.startsWith("build:") || commit.startsWith("ci:")) miscs << "* ${commit}"
+            else others << "* ${commit}"
+        }
+
+        def changelog = new StringBuilder()
+        changelog.append("## ✨ What's New in Version ${project.mod_version} (MC ${mcVersion})\n\n")
+        if (breaking) changelog.append("### ⚠️ BREAKING CHANGES\n").append(breaking.join("\n")).append("\n\n")
+        if (feats) changelog.append("### 🚀 New Features\n").append(feats.join("\n")).append("\n\n")
+        if (fixes) changelog.append("### 🔧 Bug Fixes\n").append(fixes.join("\n")).append("\n\n")
+        if (refacs) changelog.append("### ⚡ Performance & Refactoring\n").append(refacs.join("\n")).append("\n\n")
+        if (miscs) changelog.append("### 🛠 Maintenance\n").append(miscs.join("\n")).append("\n\n")
+		if (others) changelog.append("### 📦 Others\n").append(others.join("\n")).append("\n\n")
+
+        file("CHANGELOG.md").text = changelog.toString()
+        println "✅ Changelog généré dans le fichier CHANGELOG.md"
     }
 }
 
 task releaseMod {
     group = "build"
-    description = "Builds and increments mod metadata. Usage: -Ptype=[patch|minor|major] -Pvtype=[release|beta|alpha]"
+    description = "Génère le changelog, build, publie sur GitHub et Modrinth, puis incrémente la version."
     
-    dependsOn 'build'
-    finalizedBy 'incrementVersion'
+    dependsOn 'build', 'generateChangelog'
+    
+    tasks.named('modrinth').configure { mustRunAfter 'build', 'generateChangelog' }
+    tasks.named('githubRelease').configure { mustRunAfter 'build', 'generateChangelog' }
+    tasks.named('incrementVersion').configure { mustRunAfter 'modrinth', 'githubRelease' }
+
+    finalizedBy 'modrinth', 'githubRelease', 'incrementVersion'
+    
+    doLast {
+        println "🚀 Lancement de la séquence de Release..."
+    }
 }
