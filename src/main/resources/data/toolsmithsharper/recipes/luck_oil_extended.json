@@ -1,0 +1,19 @@
+﻿{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "minecraft:potion",
+      "nbt": "{Potion:\"minecraft:water\"}"
+    },
+    { "item": "minecraft:rabbit_foot" },
+    { "item": "minecraft:emerald" },
+    { "item": "minecraft:gold_ingot" }
+  ],
+  "result": {
+    "item": "toolsmithsharper:luck_oil",
+    "count": 1,
+    "nbt": "{sharper_coating_tier:\"extended\"}"
+  }
+}
+

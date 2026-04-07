@@ -1,9 +1,8 @@
 package com.samlol12.toolsmithsharper.mixin;
 
-import com.samlol12.toolsmithsharper.registry.ModComponents;
+import com.samlol12.toolsmithsharper.util.ModUtils;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
-import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,9 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class InGameHudMixin {
 
     @Inject(method = "renderHotbarItem", at = @At("HEAD"))
-    private void drawSharperHotbarBorder(DrawContext context, int x, int y, RenderTickCounter tickCounter, PlayerEntity player, ItemStack stack, int seed, CallbackInfo ci) {
-        if (stack != null && stack.contains(ModComponents.SHARPER_USES)) {
-            String coating = stack.getOrDefault(ModComponents.SHARPER_COATING, "none");
+    private void drawSharperHotbarBorder(DrawContext context, int x, int y, float tickDelta, PlayerEntity player, ItemStack stack, int seed, CallbackInfo ci) {
+        if (stack != null && ModUtils.getUses(stack) > 0) {
+            String coating = ModUtils.getCoating(stack);
             
             int color = switch (coating) {
                 case "fire" -> 0xFF8C00;

@@ -3,15 +3,15 @@
   "criteria": {
     "has_sugar": {
       "trigger": "minecraft:inventory_changed",
-      "conditions": { "items": [ { "items": "minecraft:sugar" } ] }
+      "conditions": { "items": [ { "items": [ "minecraft:sugar" ] } ] }
     }
   },
   "requirements": [ [ "has_sugar" ] ],
   "rewards": {
     "recipes": [
-      "toolsmithsharper:fire_oil_base",
-      "toolsmithsharper:fire_oil_extended",
-      "toolsmithsharper:fire_oil_amplified"
+      "toolsmithsharper:poison_oil_base",
+      "toolsmithsharper:poison_oil_extended",
+      "toolsmithsharper:poison_oil_amplified"
     ]
   }
 }

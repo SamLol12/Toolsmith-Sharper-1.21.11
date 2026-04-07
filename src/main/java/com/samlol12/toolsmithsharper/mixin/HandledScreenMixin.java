@@ -1,6 +1,6 @@
 package com.samlol12.toolsmithsharper.mixin;
 
-import com.samlol12.toolsmithsharper.registry.ModComponents;
+import com.samlol12.toolsmithsharper.util.ModUtils;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.item.ItemStack;
@@ -14,10 +14,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class HandledScreenMixin {
 
     @Inject(method = "drawSlot", at = @At("HEAD"))
-    private void drawSharperSlotBorder(DrawContext context, Slot slot, int mouseX, int mouseY, CallbackInfo ci) {
+    private void drawSharperSlotBorder(DrawContext context, Slot slot, CallbackInfo ci) {
         ItemStack stack = slot.getStack();
-        if (stack != null && stack.contains(ModComponents.SHARPER_USES)) {
-            String coating = stack.getOrDefault(ModComponents.SHARPER_COATING, "none");
+        if (stack != null && ModUtils.getUses(stack) > 0) {
+            String coating = ModUtils.getCoating(stack);
             
             int color = switch (coating) {
                 case "fire" -> 0xFF8C00;

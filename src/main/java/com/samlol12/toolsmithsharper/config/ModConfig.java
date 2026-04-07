@@ -41,7 +41,7 @@ public class ModConfig {
                 props.load(new FileInputStream(file));
                 MAX_SHARPER_BASE_USES = Integer.parseInt(props.getProperty("maxUses", "32"));
                 MAX_COATING_BASE_USES = Integer.parseInt(props.getProperty("maxCoatingUses", "10"));
-                MAX_WHETSTONE_USES = Integer.parseInt(props.getProperty("maxWheatstoneUses", "3"));
+                MAX_WHETSTONE_USES = Integer.parseInt(props.getProperty("maxWhetstoneUses", "3"));
                 WHETSTONE_USE_TIME = Integer.parseInt(props.getProperty("whetstoneUseTime", "40"));
                 DAMAGE_MULTIPLIER = Double.parseDouble(props.getProperty("damageMultiplier", "0.25"));
                 SPEED_BOOST = Double.parseDouble(props.getProperty("speedBoost", "2.0"));
@@ -69,7 +69,7 @@ public class ModConfig {
             Properties props = new Properties();
             props.setProperty("maxUses", String.valueOf(MAX_SHARPER_BASE_USES));
             props.setProperty("maxCoatingUses", String.valueOf(MAX_COATING_BASE_USES));
-            props.setProperty("maxWheatstoneUses", String.valueOf(MAX_WHETSTONE_USES));
+            props.setProperty("maxWhetstoneUses", String.valueOf(MAX_WHETSTONE_USES));
             props.setProperty("whetstoneUseTime", String.valueOf(WHETSTONE_USE_TIME));
             props.setProperty("damageMultiplier", String.valueOf(DAMAGE_MULTIPLIER));
             props.setProperty("speedBoost", String.valueOf(SPEED_BOOST));

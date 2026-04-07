@@ -1,0 +1,19 @@
+﻿{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "minecraft:potion",
+      "nbt": "{Potion:\"minecraft:strong_slowness\"}"
+    },
+    { "item": "minecraft:sugar" },
+    { "item": "minecraft:sugar" },
+    { "item": "minecraft:blaze_powder" }
+  ],
+  "result": {
+    "item": "toolsmithsharper:frost_oil",
+    "count": 1,
+    "nbt": "{sharper_coating_tier:\"amplified\"}"
+  }
+}
+

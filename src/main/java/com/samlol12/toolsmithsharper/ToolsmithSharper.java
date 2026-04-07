@@ -14,7 +14,7 @@ public class ToolsmithSharper implements ModInitializer {
     @Override
     public void onInitialize() {
         ModConfig.loadConfig();       // Config load
-        ModComponents.register();     // Load DataComponents
+        ModComponents.register();     // Load NBT Keys
         ModItems.register();          // Load Items
         ModEvents.register();         // Load Events
         ModCommands.register();       // Load Commands

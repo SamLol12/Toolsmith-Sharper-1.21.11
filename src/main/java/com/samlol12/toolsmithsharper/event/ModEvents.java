@@ -1,7 +1,6 @@
 package com.samlol12.toolsmithsharper.event;
 
 import com.samlol12.toolsmithsharper.item.ToolsmithItem;
-import com.samlol12.toolsmithsharper.registry.ModComponents;
 import com.samlol12.toolsmithsharper.registry.ModItems;
 import com.samlol12.toolsmithsharper.util.ModUtils;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
@@ -13,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.TypedActionResult;
 
 public class ModEvents {
     public static void register() {
@@ -26,19 +26,19 @@ public class ModEvents {
                 boolean isValidItem = false;
 
                 if (offStack.isOf(Items.FLINT)) { isValidItem = true; coating = "none"; }
-				else if (offStack.isOf(ModItems.FIRE_OIL)) { isValidItem = true; coating = "fire"; }
-				else if (offStack.isOf(ModItems.POISON_OIL)) { isValidItem = true; coating = "poison"; }
-				else if (offStack.isOf(ModItems.VAMPIRE_OIL)) { isValidItem = true; coating = "vampire"; }
-				else if (offStack.isOf(ModItems.FROST_OIL)) { isValidItem = true; coating = "frost"; }
-				else if (offStack.isOf(ModItems.LUCK_OIL)) { isValidItem = true; coating = "luck"; }
+                else if (offStack.isOf(ModItems.FIRE_OIL)) { isValidItem = true; coating = "fire"; }
+                else if (offStack.isOf(ModItems.POISON_OIL)) { isValidItem = true; coating = "poison"; }
+                else if (offStack.isOf(ModItems.VAMPIRE_OIL)) { isValidItem = true; coating = "vampire"; }
+                else if (offStack.isOf(ModItems.FROST_OIL)) { isValidItem = true; coating = "frost"; }
+                else if (offStack.isOf(ModItems.LUCK_OIL)) { isValidItem = true; coating = "luck"; }
 
                 if (!isValidItem) return ActionResult.PASS;
 
-                String tier = offStack.getOrDefault(ModComponents.SHARPER_COATING_TIER, "base");
+                String tier = ModUtils.getTier(offStack);
                 ActionResult result = ModUtils.trySharpen(player, world, player.getMainHandStack(), coating, tier);
                 if (result == ActionResult.SUCCESS && !world.isClient()) {
                     offStack.decrement(1);
-                    player.getItemCooldownManager().set(player.getMainHandStack(), 60);
+                    player.getItemCooldownManager().set(player.getMainHandStack().getItem(), 60);
                 }
                 return result == ActionResult.SUCCESS ? ActionResult.SUCCESS : ActionResult.PASS;
             }
@@ -51,15 +51,15 @@ public class ModEvents {
             if (stackInHand.getItem() instanceof ToolsmithItem toolsmithItem) {
                 Hand otherHand = ModUtils.getOppositeHand(hand);
                 ItemStack targetStack = player.getStackInHand(otherHand);
-                String tier = stackInHand.getOrDefault(ModComponents.SHARPER_COATING_TIER, "base");
+                String tier = ModUtils.getTier(stackInHand);
 
                 if (ModUtils.canSharpenPreview(player, world, targetStack, toolsmithItem.coating, tier)) {
                     player.setCurrentHand(hand);
-                    return ActionResult.SUCCESS;
+                    return TypedActionResult.success(stackInHand);
                 }
-                return ActionResult.FAIL;
+                return TypedActionResult.fail(stackInHand);
             }
-            return ActionResult.PASS;
+            return TypedActionResult.pass(stackInHand);
         });
 
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {

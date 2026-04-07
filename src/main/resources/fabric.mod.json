@@ -8,9 +8,9 @@
 		"SamLol12"
 	],
 	"contact": {
-		"homepage": "https://github.com/SamLol12/Toolsmith-Sharper-1.21.11.git",
-		"sources": "https://github.com/SamLol12/Toolsmith-Sharper-1.21.11.git",
-		"issues": "https://github.com/SamLol12/Toolsmith-Sharper-1.21.11/issues"
+		"homepage": "https://github.com/SamLol12/Toolsmith-Sharper.git",
+		"sources": "https://github.com/SamLol12/Toolsmith-Sharper.git",
+		"issues": "https://github.com/SamLol12/Toolsmith-Sharper/issues"
 	},
 	"license": "MIT",
 	"icon": "assets/toolsmithsharper/icon.png",
@@ -30,9 +30,9 @@
 		"toolsmithsharper.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.16.0",
-		"minecraft": "~1.21.11",
-		"java": ">=21",
+		"fabricloader": ">=0.15.0",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
 		"fabric-api": "*",
 		"modmenu": "*"
 	},

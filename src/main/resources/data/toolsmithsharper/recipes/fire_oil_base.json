@@ -1,0 +1,19 @@
+﻿{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    {
+      "item": "minecraft:potion",
+      "nbt": "{Potion:\"minecraft:fire_resistance\"}"
+    },
+    { "item": "minecraft:sugar" },
+    { "item": "minecraft:sugar" },
+    { "item": "minecraft:sugar" }
+  ],
+  "result": {
+    "item": "toolsmithsharper:fire_oil",
+    "count": 1,
+    "nbt": "{sharper_coating_tier:\"base\"}"
+  }
+}
+
