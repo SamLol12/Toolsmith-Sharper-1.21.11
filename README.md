@@ -67,4 +67,4 @@ Vous pouvez personnaliser l'intégralité du mod de trois façons différentes :
 ## 📜 Licence
 Ce mod est distribué sous licence **MIT**.
 
-**Auteur :** *samlol12* **Version Minecraft :** *1.21.11* (Fabric)
+**Auteur :** *samlol12*
