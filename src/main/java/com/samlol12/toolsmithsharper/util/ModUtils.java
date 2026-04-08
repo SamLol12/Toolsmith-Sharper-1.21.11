@@ -41,7 +41,7 @@ public class ModUtils {
     public static boolean isSharpenable(ItemStack stack) { return isWeapon(stack) || isTool(stack) || isAxe(stack); }
 
     // =========================================================================
-    // NBT HELPERS (Remplacent les appels DataComponent 1.21)
+    // NBT HELPERS
     // =========================================================================
     public static int getUses(ItemStack stack) {
         return stack.hasNbt() ? stack.getNbt().getInt(ModComponents.SHARPER_USES) : 0;
@@ -194,14 +194,14 @@ public class ModUtils {
 
         if (coating.equals("none")) {
             if (isWeapon(stack) || isAxe(stack)) {
-                // Utilisation de MULTIPLY_BASE pour correspondre au fonctionnement 1.21 ADD_MULTIPLIED_BASE
+                double currentWeaponDamage = getCurrentWeaponAttackDamage(stack);
+                double sharpenBonus = currentWeaponDamage * ModConfig.DAMAGE_MULTIPLIER;
+
                 stack.addAttributeModifier(EntityAttributes.GENERIC_ATTACK_DAMAGE,
-                        new EntityAttributeModifier(ModComponents.SHARPER_DAMAGE_ID, "Sharper Damage", ModConfig.DAMAGE_MULTIPLIER, EntityAttributeModifier.Operation.MULTIPLY_BASE),
+                        new EntityAttributeModifier(ModComponents.SHARPER_DAMAGE_ID, "Sharper Damage", sharpenBonus, EntityAttributeModifier.Operation.ADDITION),
                         EquipmentSlot.MAINHAND);
             }
             if (isTool(stack) || isAxe(stack)) {
-                // En 1.20.1 l'attribut de vitesse de minage n'existe pas en Vanilla
-                // L'Information est passée en NBT pour être lue dans vos Mixins liés à la vitesse de minage
                 stack.getOrCreateNbt().putDouble("SharperMiningSpeed", ModConfig.SPEED_BOOST);
             }
         }
@@ -305,6 +305,20 @@ public class ModUtils {
         if (stack.hasNbt()) {
             stack.getNbt().remove("SharperMiningSpeed");
         }
+    }
+
+    private static double getCurrentWeaponAttackDamage(ItemStack stack) {
+        double totalAttackDamage = 0.0;
+        var modifiers = stack.getAttributeModifiers(EquipmentSlot.MAINHAND)
+                .get(EntityAttributes.GENERIC_ATTACK_DAMAGE);
+
+        for (EntityAttributeModifier modifier : modifiers) {
+            if (modifier.getOperation() == EntityAttributeModifier.Operation.ADDITION) {
+                totalAttackDamage += modifier.getValue();
+            }
+        }
+
+        return Math.max(0.0, totalAttackDamage);
     }
 
     private static void updateEnchantmentLevel(ItemStack stack, Enchantment enchantment, int level) {
