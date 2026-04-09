@@ -170,7 +170,7 @@ public class ModUtils {
         if (coating.equals("none")) {
             if (isWeapon(stack) || isAxe(stack)) {
                 attrBuilder.add(EntityAttributes.ATTACK_DAMAGE,
-                        new EntityAttributeModifier(ModComponents.SHARPER_DAMAGE_ID, ModConfig.DAMAGE_MULTIPLIER, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE),
+                        new EntityAttributeModifier(ModComponents.SHARPER_DAMAGE_ID, ModConfig.DAMAGE_MULTIPLIER, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL),
                         AttributeModifierSlot.MAINHAND);
             }
             if (isTool(stack) || isAxe(stack)) {
@@ -185,7 +185,7 @@ public class ModUtils {
     public static void applyCoatingHitEffects(PlayerEntity attacker, LivingEntity target, String coating, String tier) {
         if (coating.equals("none")) return;
 
-        // Lecture dynamique depuis la configuration
+        // Dynamically calculate duration and amplifier based on tier
         int duration = tier.equals("extended") ? ModConfig.EFFECT_DURATION_EXTENDED : ModConfig.EFFECT_DURATION_BASE;
         int amplifier = tier.equals("amplified") ? ModConfig.EFFECT_AMPLIFIER_AMPLIFIED : ModConfig.EFFECT_AMPLIFIER_BASE;
 
@@ -197,7 +197,7 @@ public class ModUtils {
             case "poison" -> target.addStatusEffect(new StatusEffectInstance(StatusEffects.POISON, duration, amplifier));
             case "frost" -> target.addStatusEffect(new StatusEffectInstance(StatusEffects.SLOWNESS, duration, amplifier));
             case "vampire" -> attacker.heal(tier.equals("amplified") ? ModConfig.VAMPIRE_HEAL_AMPLIFIED : ModConfig.VAMPIRE_HEAL_BASE);
-            case "luck" -> attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, duration * 2, amplifier)); // Luck dure 2x plus longtemps pour être utile
+            case "luck" -> attacker.addStatusEffect(new StatusEffectInstance(StatusEffects.LUCK, duration * 2, amplifier));
         }
     }
 
